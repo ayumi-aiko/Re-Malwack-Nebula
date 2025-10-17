@@ -49,7 +49,6 @@ jobs:
       - name: Remove Whitelisted Domains
         run: |
           echo "Filtering whitelist..."
-
           if [ -s whitelist.txt ]; then
             while IFS= read -r domain; do
               escaped_domain=$(printf '%s' "$domain" | sed 's/[]\/$*.^|[]/\\&/g')
