@@ -1,0 +1,3 @@
+[submodule "module/mitsuha"]
+	path = module/mitsuha
+	url = https://github.com/ayumi-aiko/Mitsuha.git
