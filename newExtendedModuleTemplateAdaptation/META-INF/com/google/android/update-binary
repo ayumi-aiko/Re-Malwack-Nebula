@@ -1,0 +1,34 @@
+#!/sbin/sh
+#
+# Copyright (C) 2025 愛子あゆみ <ayumi.aiko@outlook.com>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+umask 022
+ui_print() { echo "$1"; }
+require_new_magisk() { ui_print " Please install Magisk v20.4+! "; exit 1; }
+OUTFD=$2
+ZIPFILE=$3
+mount /data 2>/dev/null
+[ -f "/data/adb/magisk/util_functions.sh" ] || require_new_magisk
+source /data/adb/magisk/util_functions.sh
+[ "${MAGISK_VER_CODE}" -lt "20400" ] && require_new_magisk
+for files in banner common/functions.sh properties.prop bin/arm/keycheck bin/arm/jq bin/arm64/jq; do
+	unzip -o $ZIPFILE $files -d /data/local/tmp &>/dev/null
+done
+chmod +x /data/local/tmp/common/functions.sh
+source /data/local/tmp/common/functions.sh
+install_module
+rm -rf /data/local/tmp/{banner,common,properties.prop}
+exit 0
