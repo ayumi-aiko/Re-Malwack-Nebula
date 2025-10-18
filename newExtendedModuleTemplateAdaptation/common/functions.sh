@@ -14,6 +14,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+
+# gbl variable that is required by some functions for certain use cases:
+archPath="$(getprop "ro.product.cpu.abi")"
+moduleID="$(grep_prop id /dev/tmp/module.prop)"
+if $BOOTMODE; then defaultModuleDirectory=modules_update; else defaultModuleDirectory=modules; fi
+modulePath="/data/adb/${defaultModuleDirectory}/${moduleID}"
+persistentDirectory="/data/adb/Re-Malwack"
+configFile="$persistentDirectory/config.sh"
+
 # the ui_print calls will get redirected to the Magisk log by the debugPrint function.
 function consolePrint() {
     echo -e "$@" > /proc/self/fd/$OUTFD
@@ -22,7 +31,7 @@ function consolePrint() {
 # same as consolePrint
 function abortInstance() {
 	consolePrint "$@"
-	rm -rf /data/local/tmp/{banner,common,properties.prop}
+	rm -rf /dev/tmp/{banner,common,properties.prop} $modulePath $MODPATH/import.sh
     exit 1
 }
 
@@ -70,23 +79,23 @@ function logInterpreter() {
 
 # prints banner
 function printBanner() {
-	[ -f "/data/local/tmp/banner" ] && cat /data/local/tmp/banner > /proc/self/fd/$OUTFD
+	[ -f "${modulePath}/banner" ] && cat ${modulePath}/banner > /proc/self/fd/$OUTFD
 }
 
 # for caching the keys
 function registerKeys() {
     while true; do
         # Calling keycheck first time detects previous input. Calling it second time will do what we want
-        /data/local/tmp/bin/arm/keycheck
-        /data/local/tmp/bin/arm/keycheck
+        ${modulePath}/bin/armeabi-v7a/keycheck
+        ${modulePath}/bin/armeabi-v7a/keycheck
         local SEL=$?
         if [ "$1" == "UP" ]; then
             UP=$SEL
-            echo "$UP" > /data/local/tmp/volActionUp
+            echo "$UP" > ${modulePath}/volActionUp
             break
         elif [ "$1" == "DOWN" ]; then
             DOWN=$SEL
-            echo "$DOWN" > /data/local/tmp/volActionDown
+            echo "$DOWN" > ${modulePath}/volActionDown
             break
         elif [ $SEL -eq $UP ]; then
             return 1
@@ -99,11 +108,11 @@ function registerKeys() {
 # returns 0 when + is pressed, 1 when - 
 function whichVolumeKey() {
     local SEL
-    /data/local/tmp/bin/arm/keycheck
+    ${modulePath}/bin/armeabi-v7a/keycheck
     SEL="$?"
-    if [ "$(cat "/data/local/tmp/volActionUp")" == "${SEL}" ]; then
+    if [ "$(cat "${modulePath}/volActionUp")" == "${SEL}" ]; then
         return 0
-    elif [ "$(cat "/data/local/tmp/volActionDown")" == "${SEL}" ]; then
+    elif [ "$(cat "${modulePath}/volActionDown")" == "${SEL}" ]; then
         return 1
     else
         debugPrint "Error | whichVolumeKey(): Unknown key register, here's the return value: ${SEL}"
@@ -119,16 +128,14 @@ function ask() {
 
 # most used crap
 function recoveryAhhSelection() {
-    local text="$1"
-    local incrementation="$2"
-    icrmntval=0
-    consolePrint "$text"
-    consolePrint "\nSelect an option:"
-    consolePrint "- Volume up = Switch option"
-    consolePrint "- Volume down = Select option\n"
+    local incrementation="$1"
+    icrmntval=1
+    consolePrint "- Select an option:"
+    consolePrint "  Volume up = Switch option"
+    consolePrint "  Volume down = Select option"
     while true; do
-        consolePrint "  $icrmntval"
         if whichVolumeKey; then
+			consolePrint "  $icrmntval"
             if [ $icrmntval -gt $incrementation ]; then
                 icrmntval=0
             fi
@@ -167,4 +174,65 @@ function setPermRecursive() {
   	find "$1" -type f -o -type l 2>/dev/null | while read file; do
     	setPerm "$file" "$2" "$3" "$5" "$6"
   	done
+}
+
+# uninstalls the module in recovery if found to be installed. Helpful in certain situations.
+function uninstallModule() {
+	[ "${canModuleGetInstalledInRecovery}" == "false" ] || return 0;
+	if ! $BOOTMODE; then
+		for paths in /data/adb/*/${moduleID}; do
+			if [ -f "$paths" ]; then 
+				touch ${paths}/uninstall
+				consolePrint "Found module on $paths, placing a file to remind magisk to uninstall this module."
+			fi
+		done
+		abort "- You cannot install this module in recovery mode"
+	fi
+}
+
+# extracts the correct required binary from the zipfile.
+function extractBinaryFromModule() {
+	local fileToExtract="$1" extractPath="$2"
+	unzip -l "${ZIPFILE}" | grep -q "${fileToExtract}" || abort "- Cannot extract unknown file: ${fileToExtract}"
+	unzip -o "${ZIPFILE}" "${fileToExtract}" -d "${extractPath}"
+}
+
+# i dont want to comment on this awful function
+function loopInternetCheck() {
+	local state="$1"
+	local pidFile="${modulePath}/pidIC"
+	local flagFile="${modulePath}/.internet_ok"
+	if [ "$state" = "--loop" ]; then
+		(
+			while true; do
+				if ping -c 1 -w 5 8.8.8.8 >/dev/null 2>&1; then
+					echo 1 > "$flagFile"
+				else
+					rm -f "$flagFile"
+				fi
+				sleep 5
+			done
+		) &
+		echo $! > "$pidFile"
+	elif [ "$state" = "--wait" ]; then
+		while [ ! -f "$flagFile" ]; do
+			consolePrint "- Internet unavailable, waiting..."
+			sleep 5
+		done
+	elif [ "$state" = "--killLoop" ]; then
+		if [ -f "$pidFile" ]; then
+			kill "$(cat "$pidFile")" >/dev/null 2>&1
+			rm -f "$pidFile"
+		fi
+		rm -f "$flagFile"
+	else
+		echo "Usage: loopInternetCheck [--loop | --wait | --killLoop]" >&2
+		return 1
+	fi
+}
+
+# adds url if not found in the sources file/
+function appendUnavailableURL() {
+    local url="$1"
+    grep -q "^$url$" "$persistentDirectory/sources.txt" || echo "$url" >> "$persistentDirectory/sources.txt"
 }

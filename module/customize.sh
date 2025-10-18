@@ -76,7 +76,6 @@ mkdir -p $MODPATH/system/etc
 rm -rf $persistent_dir/logs/* 2>/dev/null
 rm -rf $persistent_dir/cache/* 2>/dev/null
 
-
 # Handle hosts sources file
 # Function to add URL only if it doesn't exist
 add_url_if_not_exists() {

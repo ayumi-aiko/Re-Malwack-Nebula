@@ -14,14 +14,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-### if you want to add a late start service, change the value to true.
-doesModuleRequireLSS=false
 
-### if you want to add a post-fs-data service, change the value to true.
-doesModuleRequirePFS=true
-
-### if you dont want users to install this module via recovery, set the value to true.
-canModuleGetInstalledInRecovery=false
-
-### if you dont have x86 and x86_64 support, please set this to false
-doesModuleSupportHavingX86LibrariesAndBinaries=false
+rm -rf /data/adb/Re-Malwack /data/adb/*/bin/rmlwk
+if [ -f $INFO ]; then
+    while read LINE; do
+        if [ "$(echo -n $LINE | tail -c 1)" == "~" ]; then
+            continue
+        elif [ -f "$LINE~" ]; then
+            mv -f $LINE~ $LINE
+        else
+            rm -f $LINE
+            while true; do
+                LINE=$(dirname $LINE)
+                [ "$(ls -A $LINE 2>/dev/null)" ] && break 1 || rm -rf $LINE
+            done
+        fi
+    done < $INFO
+    rm -f $INFO
+fi

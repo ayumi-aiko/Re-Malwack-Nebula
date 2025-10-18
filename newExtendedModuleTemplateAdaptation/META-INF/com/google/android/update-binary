@@ -24,11 +24,11 @@ mount /data 2>/dev/null
 [ -f "/data/adb/magisk/util_functions.sh" ] || require_new_magisk
 source /data/adb/magisk/util_functions.sh
 [ "${MAGISK_VER_CODE}" -lt "20400" ] && require_new_magisk
-for files in banner common/functions.sh properties.prop bin/arm/keycheck bin/arm/jq bin/arm64/jq; do
-	unzip -o $ZIPFILE $files -d /data/local/tmp &>/dev/null
+for files in banner common/functions.sh properties.prop module.prop; do
+	unzip -o $ZIPFILE $files -d /dev/tmp &>/dev/null
 done
-chmod +x /data/local/tmp/common/functions.sh
-source /data/local/tmp/common/functions.sh
+chmod +x /dev/tmp/common/functions.sh
+source /dev/tmp/common/functions.sh
 install_module
-rm -rf /data/local/tmp/{banner,common,properties.prop}
+rm -rf /dev/tmp/{banner,common,properties.prop}
 exit 0
