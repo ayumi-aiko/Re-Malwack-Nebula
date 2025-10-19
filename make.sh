@@ -19,11 +19,11 @@
 # shutt up
 CC_ROOT="/home/ayumi/android-ndk-r27d/toolchains/llvm/prebuilt/linux-x86_64/bin"
 CFLAGS="-std=c23 -O3 -static"
-BUILD_LOGFILE="./module/mitsuha/build/logs/build.log"
-OUTPUT_DIR="./module/mitsuha/build"
-MITSUHA_HEADERS="./module/mitsuha/src/include"
-MITSUHA_SOURCES="./module/mitsuha/src/include/daemon.c"
-TARGETS=("./module/mitsuha/src/yuki/main.c" "./module/mitsuha/src/alya/main.c")
+BUILD_LOGFILE="./mitsuha/build/logs/build.log"
+OUTPUT_DIR="./mitsuha/build"
+MITSUHA_HEADERS="./mitsuha/src/include"
+MITSUHA_SOURCES="./mitsuha/src/include/daemon.c"
+TARGETS=("./mitsuha/src/yuki/main.c" "./mitsuha/src/alya/main.c")
 OUTPUT_BINARY_NAMES=("mitsuha-yuki" "mitsuha-alya")
 DEFAULT_MODULE_BINARIES_PATH=./module/bin/armeabi-v7a
 SDK=""
