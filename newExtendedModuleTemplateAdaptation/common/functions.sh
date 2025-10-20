@@ -65,6 +65,7 @@ function logInterpreter() {
 		--exit-on-failure)
 			if ! eval "$command" &> /proc/self/fd/2; then
 				debugPrint "$service: $failureMessage"
+				rm -rf /dev/tmp/{banner,common,properties.prop} $modulePath $MODPATH/import.sh
 				exit 1
 			fi
 		;;
@@ -72,6 +73,7 @@ function logInterpreter() {
 			if ! eval "$command" &> /proc/self/fd/2; then
 				debugPrint "$service: $failureMessage"
 				eval "$failureCommand" 2&> /proc/self/fd/2 || debugPrint "logInterpreter: Failed to execute failure command."
+				rm -rf /dev/tmp/{banner,common,properties.prop} $modulePath $MODPATH/import.sh
 			fi
 		;;
 	esac
@@ -235,4 +237,32 @@ function loopInternetCheck() {
 function appendUnavailableURL() {
     local url="$1"
     grep -q "^$url$" "$persistentDirectory/sources.txt" || echo "$url" >> "$persistentDirectory/sources.txt"
+}
+
+function getLatestReleaseFromGithub() {
+    local githubReleaseURL="$1"
+    if [[ -z "$githubReleaseURL" ]]; then
+        echo "Error: No GitHub release URL provided."
+        return 1
+    fi
+    local latestRelease=$(curl -s "$githubReleaseURL" | grep -oP '"browser_download_url": "\K[^"]+')
+    if [[ -z "$latestRelease" ]]; then
+        echo "Error: Could not retrieve the latest release URL."
+        return 1
+    fi
+    echo "$latestRelease"
+}
+
+function downloadContentFromWEB() {
+    local URL="$1"
+    local outputPathAndFilename="$2"
+	local prevPath="$PATH"
+    export PATH="/data/adb/ap/bin:/data/adb/ksu/bin:/data/adb/magisk:/data/data/com.termux/files/usr/bin:${PATH}"
+    if command -v curl >/dev/null 2>&1; then
+        curl -Ls "$URL" > "$outputPathAndFilename" || abortInstance ERROR "Failed to download from $URL with curl"
+    else
+        busybox wget --no-check-certificate -qO - "$URL" > "$outputPathAndFilename" || abortInstance "Failed to download from $URL with wget"
+    fi
+	# reset path, we dont want to mess it up on every call.
+	export PATH="${prevPath}"
 }
