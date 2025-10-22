@@ -19,12 +19,12 @@
 # shutt up
 CC_ROOT="/home/ayumi/android-ndk-r27d/toolchains/llvm/prebuilt/linux-x86_64/bin"
 CFLAGS="-std=c23 -O3 -static"
-BUILD_LOGFILE="./mitsuha/build/logs/build.log"
-OUTPUT_DIR="./mitsuha/build"
-MITSUHA_HEADERS="./mitsuha/src/include"
-MITSUHA_SOURCES="./mitsuha/src/include/daemon.c"
-TARGETS=("./mitsuha/src/yuki/main.c" "./mitsuha/src/alya/main.c")
-OUTPUT_BINARY_NAMES=("mitsuha-yuki" "mitsuha-alya")
+BUILD_LOGFILE="./hoshiko/build.log"
+OUTPUT_DIR="./hoshiko/hoshiko-cli"
+HOSHIKO_HEADERS="./hoshiko/hoshiko-cli/src/include"
+HOSHIKO_SOURCES="./hoshiko/hoshiko-cli/src/include/daemon.c"
+TARGETS=("./hoshiko/hoshiko-cli/src/yuki/main.c" "./hoshiko/hoshiko-cli/src/alya/main.c")
+OUTPUT_BINARY_NAMES=("hoshiko-yuki" "hoshiko-alya")
 DEFAULT_MODULE_BINARIES_PATH=./module/bin/armeabi-v7a
 SDK=""
 CC=""
@@ -40,13 +40,13 @@ mkdir -p "$(dirname "${BUILD_LOGFILE}")" "${OUTPUT_DIR}"
 for args in "$@"; do
     lowerCaseArgument=$(echo "${args}" | tr '[:upper:]' '[:lower:]')
     if [ "${lowerCaseArgument}" == "clean" ]; then
-        rm -f ${BUILD_LOGFILE} ${OUTPUT_DIR}/mitsuha-* ../Re-Malwack_*.zip
+        rm -f ${BUILD_LOGFILE} ${OUTPUT_DIR}/hoshiko-* ../Re-Malwack_*.zip
 	    echo -e "\033[0;32mmake: Info: Clean complete.\033[0m"
         break;
     # for now, let's just build the old module template.
     elif [[ "${lowerCaseArgument}" == *module* ]]; then
         if [ ! -f "${OUTPUT_DIR}/${OUTPUT_BINARY_NAMES[0]}" ]; then
-            printf "\033[0;31mmake: Error: Please build mitsuha before building this module.\033[0m\n"
+            printf "\033[0;31mmake: Error: Please build hoshiko before building this module.\033[0m\n"
             exit 1;
         fi
         echo -e "\e[0;35mmake: Info: Building Re-Malwack magisk module installer...\e[0;37m" 
@@ -86,10 +86,10 @@ for args in "$@"; do
             ;;
         esac
     fi
-    if [[ -n "${SDK}" && -n "${CC}" && "${lowerCaseArgument}" == *mitsuha* ]]; then
-        echo -e "\e[0;35mmake: Info: Building Mitsuha binaries...\e[0;37m"
+    if [[ -n "${SDK}" && -n "${CC}" && "${lowerCaseArgument}" == *hoshiko* ]]; then
+        echo -e "\e[0;35mmake: Info: Building Hoshiko binaries...\e[0;37m"
         for i in $(seq 0 1); do
-            if ! ${CC} ${CFLAGS} "${MITSUHA_SOURCES}" -I"${MITSUHA_HEADERS}" "${TARGETS[$i]}" -o "${OUTPUT_DIR}/${OUTPUT_BINARY_NAMES[$i]}" &> "${BUILD_LOGFILE}"; then
+            if ! ${CC} ${CFLAGS} "${HOSHIKO_SOURCES}" -I"${HOSHIKO_HEADERS}" "${TARGETS[$i]}" -o "${OUTPUT_DIR}/${OUTPUT_BINARY_NAMES[$i]}" &> "${BUILD_LOGFILE}"; then
                 printf "\033[0;31mmake: Error: Build failed, check %s\033[0m\n" "${BUILD_LOGFILE}"
                 exit 1
             fi

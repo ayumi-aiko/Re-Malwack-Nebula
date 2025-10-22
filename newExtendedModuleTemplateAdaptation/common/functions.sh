@@ -256,13 +256,13 @@ function getLatestReleaseFromGithub() {
 function downloadContentFromWEB() {
     local URL="$1"
     local outputPathAndFilename="$2"
-	local prevPath="$PATH"
+    local prevPath="$PATH"
     export PATH="/data/adb/ap/bin:/data/adb/ksu/bin:/data/adb/magisk:/data/data/com.termux/files/usr/bin:${PATH}"
+    mkdir -p "$(dirname "$outputPathAndFilename")"
     if command -v curl >/dev/null 2>&1; then
-        curl -Ls "$URL" > "$outputPathAndFilename" || abortInstance ERROR "Failed to download from $URL with curl"
+        curl -Ls "$URL" -o "$outputPathAndFilename" || abortInstance "Failed to download from $URL with curl"
     else
-        busybox wget --no-check-certificate -qO - "$URL" > "$outputPathAndFilename" || abortInstance "Failed to download from $URL with wget"
+        wget --no-check-certificate -qO "$outputPathAndFilename" "$URL" || abortInstance "Failed to download from $URL with wget"
     fi
-	# reset path, we dont want to mess it up on every call.
-	export PATH="${prevPath}"
+    export PATH="${prevPath}"
 }
