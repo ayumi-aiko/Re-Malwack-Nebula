@@ -21,11 +21,14 @@ CC_ROOT="/home/ayumi/android-ndk-r27d/toolchains/llvm/prebuilt/linux-x86_64/bin"
 CFLAGS="-std=c23 -O3 -static"
 BUILD_LOGFILE="./hoshiko/build.log"
 OUTPUT_DIR="./hoshiko/hoshiko-cli"
+OUTPUT_DIR_MODULE_BINARY_BUILD="./newExtendedModuleTemplateAdaptation/bin/"
 HOSHIKO_HEADERS="./hoshiko/hoshiko-cli/src/include"
 HOSHIKO_SOURCES="./hoshiko/hoshiko-cli/src/include/daemon.c"
 TARGETS=("./hoshiko/hoshiko-cli/src/yuki/main.c" "./hoshiko/hoshiko-cli/src/alya/main.c")
 OUTPUT_BINARY_NAMES=("hoshiko-yuki" "hoshiko-alya")
-DEFAULT_MODULE_BINARIES_PATH=./module/bin/armeabi-v7a
+ARCH_CLANG_FOR_BUILDING_MODULE=("armv7a-linux-androideabi" "aarch64-linux-android")
+ARCH_PATHS_FOR_MODULE_BINARIES=("armeabi-v7a" "arm64-v8a")
+DEFAULT_MODULE_BINARIES_PATH="./newExtendedModuleTemplateAdaptation/bin/armeabi-v7a"
 SDK=""
 CC=""
 
@@ -40,26 +43,29 @@ mkdir -p "$(dirname "${BUILD_LOGFILE}")" "${OUTPUT_DIR}"
 for args in "$@"; do
     lowerCaseArgument=$(echo "${args}" | tr '[:upper:]' '[:lower:]')
     if [ "${lowerCaseArgument}" == "clean" ]; then
-        rm -f ${BUILD_LOGFILE} ${OUTPUT_DIR}/hoshiko-* ../Re-Malwack_*.zip
+        rm -f ${BUILD_LOGFILE} ${OUTPUT_DIR}/hoshiko-* ../Re-Malwack_*.zip ${OUTPUT_DIR_MODULE_BINARY_BUILD}/*/hoshiko-*
 	    echo -e "\033[0;32mmake: Info: Clean complete.\033[0m"
         break;
     # for now, let's just build the old module template.
     elif [[ "${lowerCaseArgument}" == *module* ]]; then
-        if [ ! -f "${OUTPUT_DIR}/${OUTPUT_BINARY_NAMES[0]}" ]; then
-            printf "\033[0;31mmake: Error: Please build hoshiko before building this module.\033[0m\n"
-            exit 1;
-        fi
-        echo -e "\e[0;35mmake: Info: Building Re-Malwack magisk module installer...\e[0;37m" 
-        # no, im not using for loop for this.
-        file "${OUTPUT_DIR}/${OUTPUT_BINARY_NAMES[0]}" | grep -q 64-bit && DEFAULT_MODULE_BINARIES_PATH=./module/bin/arm64-v8a
-        mv "${OUTPUT_DIR}/${OUTPUT_BINARY_NAMES[0]}" "${DEFAULT_MODULE_BINARIES_PATH}"
-        mv "${OUTPUT_DIR}/${OUTPUT_BINARY_NAMES[1]}" "${DEFAULT_MODULE_BINARIES_PATH}"
+        echo -e "\e[0;35mmake: Info: Building Hoshiko binaries for arm64 and arm devices..\e[0;37m"
+        for j in $(seq 0 1); do
+            CC="${CC_ROOT}/${ARCH_CLANG_FOR_BUILDING_MODULE[${j}]}${SDK}-clang"
+            for i in $(seq 0 1); do
+                if ! ${CC} ${CFLAGS} "${HOSHIKO_SOURCES}" -I"${HOSHIKO_HEADERS}" "${TARGETS[$i]}" -o "${OUTPUT_DIR_MODULE_BINARY_BUILD}/${ARCH_PATHS_FOR_MODULE_BINARIES[${j}]}/${OUTPUT_BINARY_NAMES[$i]}" &> "${BUILD_LOGFILE}"; then
+                    printf "\033[0;31mmake: Error: Build failed, check %s\033[0m\n" "${BUILD_LOGFILE}"
+                    exit 1
+                fi
+            done
+        done
+        echo -e "\e[0;36mmake: Info: Build finished without errors, be sure to check logs if concerned. Thank you!\e[0;37m"
+        echo -e "\e[0;35mmake: Info: Building Re-Malwack magisk module installer...\e[0;37m"
         lastestCommitNum="$(git rev-list --count HEAD)"
         lastestCommitHash="$(git rev-parse --short HEAD)"
         lastestCommitMessage="$(git log -1 --pretty=%B | head -n 1)"
         lastestVersion="$(grep version update.json | head -n 1 | awk '{print $2}' | sed 's/,//' | xargs)"
         sed -i "s/^version=.*/version=${lastestVersion}-lastest-commit-nebula (#${lastestCommitNum}-${lastestCommitHash})/" module/module.prop
-        if ! zip -r "../Re-Malwack_${lastestVersion}-${lastestCommitNum}-${lastestCommitHash}.zip" ./module/ &>/dev/null; then
+        if ! zip -r "../Re-Malwack_${lastestVersion}-${lastestCommitNum}-${lastestCommitHash}.zip" ./newExtendedModuleTemplateAdaptation/ &>/dev/null; then
             git restore module/module.prop
             printf "\033[0;31mmake: Error: Failed to compress the module sources, please try again or install zip to proceed.\033[0m\n"
             exit 1

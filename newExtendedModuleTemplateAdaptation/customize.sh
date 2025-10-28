@@ -108,5 +108,10 @@ rm -f $MODPATH/import.sh
 [ "${doesModuleRequireLSS}" == "true" ] && logInterpreter --exit-on-failure "customize.sh" "Trying to extract the late start service script..." "unzip -o ${ZIPFILE} service.sh -d $MODPATH"
 [ "${doesModuleRequirePFS}" == "true" ] && logInterpreter --exit-on-failure "customize.sh" "Trying to extract the post-fs-data script..." "unzip -o ${ZIPFILE} post-fs-data.sh -d $MODPATH"
 
+# move the appropriate bbinaries into the system path.
+mkdir -p "${modulePath}/system/bin"
+mv "${modulePath}/bin/$(getprop "ro.product.cpu.abi")/hoshiko-alya" "${modulePath}/system/bin/"
+mv "${modulePath}/bin/$(getprop "ro.product.cpu.abi")/hoshiko-yuki" "${modulePath}/system/bin/"
+
 # uhrm idc
 consolePrint "\n- Installed Re-Malwack into your device, please be sure to thank us on our Telegram!"
