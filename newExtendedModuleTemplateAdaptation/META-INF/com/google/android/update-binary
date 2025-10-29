@@ -20,6 +20,7 @@ ui_print() { echo "$1"; }
 require_new_magisk() { ui_print " Please install Magisk v20.4+! "; exit 1; }
 OUTFD=$2
 ZIPFILE=$3
+export updateBinaryGotExecuted=true
 mount /data 2>/dev/null
 [ -f "/data/adb/magisk/util_functions.sh" ] || require_new_magisk
 source /data/adb/magisk/util_functions.sh

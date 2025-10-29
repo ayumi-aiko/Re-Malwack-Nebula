@@ -15,6 +15,16 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+# newer magisk pre-setup:
+if [ -z "${updateBinaryGotExecuted}" ]; then
+    for files in banner common/functions.sh properties.prop module.prop; do
+        unzip -o $ZIPFILE $files -d /dev/tmp &>/dev/null
+    done
+    chmod +x /dev/tmp/common/functions.sh
+    source /dev/tmp/common/functions.sh
+    debugPrint "customize.sh: Newer magisk version detected"
+fi
+
 # setup stuff: give perms to the binaries inside /bin!
 chmod 755 ${modulePath}/bin/*/*
 chown root:root ${modulePath}/bin/*/*
@@ -33,10 +43,10 @@ uninstallModule;
 
 # skip installations if x86* not supported.
 [ "$(getprop "ro.product.cpu.abi")" == "x86|x86_64" ] && [ "${doesModuleSupportHavingX86LibrariesAndBinaries}" == "false" ] && \
-    abort "- Your device is not supported to install this module."
+    abortInstance "- Your device is not supported to install this module."
 
 # alert users to uninstall adaway.
-pm list packages | grep -q org.adaway && abort "- Adaway detected, Please uninstall to prevent conflicts, backup your setup optionally before uninstalling in case you want to import your setup."
+pm list packages | grep -q org.adaway && abortInstance "- Adaway detected, Please uninstall to prevent conflicts, backup your setup optionally before uninstalling in case you want to import your setup."
 
 # check volume keyyyyyyy
 consolePrint "- Starting to register your device's volume key inputs..."
@@ -53,7 +63,7 @@ for types in block_porn block_gambling block_fakenews block_social block_tracker
 done
 
 # Import from other ad-block modules.
-. $MODPATH/import.sh
+. ${modulePath}/common/import.sh
 
 # okie pls dont bash me for plugging my stuff into ts.
 consolePrint "- Hoshiko is an unofficial app made by Ayumi that helps Re-Malwack to stop adblocking in certain apps requested by the user."
@@ -68,27 +78,27 @@ if ask "  Do you want to install Hoshiko?"; then
 fi
 
 # set permissions
-chmod 0755 $persistent_dir/config.sh $MODPATH/action.sh $MODPATH/rmlwk.sh $MODPATH/uninstall.sh
+chmod 0755 $persistent_dir/config.sh ${modulePath}/action.sh ${modulePath}/rmlwk.sh ${modulePath}/uninstall.sh
 
 # Initialize hosts files
-mkdir -p $MODPATH/system/etc
+mkdir -p ${modulePath}/system/etc
 rm -rf $persistentDirectory/logs/* 2>/dev/null
 rm -rf $persistentDirectory/cache/* 2>/dev/null
 
 # handle hosts sources file:
 if [ ! -s "${persistentDirectory}/sources.txt" ]; then
-    mv -f $MODPATH/common/sources.txt $persistentDirectory/sources.txt
+    mv -f ${modulePath}/common/sources.txt $persistentDirectory/sources.txt
 else 
     # update sources
-    rm -f $MODPATH/common/sources.txt
+    rm -f ${modulePath}/common/sources.txt
     sed -i 's|https://raw.githubusercontent.com/hagezi/dns-blocklists/main/hosts/pro.plus.txt|https://raw.githubusercontent.com/hagezi/dns-blocklists/main/hosts/pro.txt|' $persistentDirectory/sources.txt
     sed -i 's|https://o0.pages.dev/Pro/hosts.txt|https://badmojr.github.io/1Hosts/Lite/hosts.txt|' $persistentDirectory/sources.txt
     appendUnavailableURL "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/hosts/native.tiktok.txt"
 fi
 
 # Initialize
-if ! sh $MODPATH/rmlwk.sh --update-hosts --quiet; then
-    consolePrint "  Failed to initialize script"
+if ! sh ${modulePath}/rmlwk.sh --update-hosts --quiet; then
+    consolePrint "- Failed to initialize script"
     tarFileName="/sdcard/Download/Re-Malwack_install_log_$(date +%Y-%m-%d_%H%M%S).tar.gz"
     tar -czvf ${tarFileName} --exclude="$persistentDirectory" -C $persistentDirectory logs
     # cleanup in case of failure (in worst cases on first install)
@@ -102,11 +112,11 @@ for i in /data/adb/ap/bin /data/adb/ksu/bin; do
 done
 
 # Cleanup
-rm -f $MODPATH/import.sh
+rm -f ${modulePath}/import.sh
 
 # extract the init services 
-[ "${doesModuleRequireLSS}" == "true" ] && logInterpreter --exit-on-failure "customize.sh" "Trying to extract the late start service script..." "unzip -o ${ZIPFILE} service.sh -d $MODPATH"
-[ "${doesModuleRequirePFS}" == "true" ] && logInterpreter --exit-on-failure "customize.sh" "Trying to extract the post-fs-data script..." "unzip -o ${ZIPFILE} post-fs-data.sh -d $MODPATH"
+[ "${doesModuleRequireLSS}" == "true" ] && logInterpreter --exit-on-failure "customize.sh" "Trying to extract the late start service script..." "unzip -o ${ZIPFILE} service.sh -d ${modulePath}"
+[ "${doesModuleRequirePFS}" == "true" ] && logInterpreter --exit-on-failure "customize.sh" "Trying to extract the post-fs-data script..." "unzip -o ${ZIPFILE} post-fs-data.sh -d ${modulePath}"
 
 # move the appropriate bbinaries into the system path.
 mkdir -p "${modulePath}/system/bin"

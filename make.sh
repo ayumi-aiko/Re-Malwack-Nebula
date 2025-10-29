@@ -43,7 +43,7 @@ mkdir -p "$(dirname "${BUILD_LOGFILE}")" "${OUTPUT_DIR}"
 for args in "$@"; do
     lowerCaseArgument=$(echo "${args}" | tr '[:upper:]' '[:lower:]')
     if [ "${lowerCaseArgument}" == "clean" ]; then
-        rm -f ${BUILD_LOGFILE} ${OUTPUT_DIR}/hoshiko-* ../Re-Malwack_*.zip ${OUTPUT_DIR_MODULE_BINARY_BUILD}/*/hoshiko-*
+        rm -f ${BUILD_LOGFILE} ${OUTPUT_DIR}/hoshiko-* ../Re-Malwack_*.zip ./Re-Malwack_*.zip ${OUTPUT_DIR_MODULE_BINARY_BUILD}/*/hoshiko-*
 	    echo -e "\033[0;32mmake: Info: Clean complete.\033[0m"
         break;
     # for now, let's just build the old module template.
@@ -65,11 +65,13 @@ for args in "$@"; do
         lastestCommitMessage="$(git log -1 --pretty=%B | head -n 1)"
         lastestVersion="$(grep version update.json | head -n 1 | awk '{print $2}' | sed 's/,//' | xargs)"
         sed -i "s/^version=.*/version=${lastestVersion}-lastest-commit-nebula (#${lastestCommitNum}-${lastestCommitHash})/" module/module.prop
-        if ! zip -r "../Re-Malwack_${lastestVersion}-${lastestCommitNum}-${lastestCommitHash}.zip" ./newExtendedModuleTemplateAdaptation/ &>/dev/null; then
+        cd ./newExtendedModuleTemplateAdaptation/
+        if ! zip -r "../Re-Malwack_${lastestVersion}-${lastestCommitNum}-${lastestCommitHash}.zip" . &>/dev/null; then
             git restore module/module.prop
             printf "\033[0;31mmake: Error: Failed to compress the module sources, please try again or install zip to proceed.\033[0m\n"
             exit 1
         fi
+        cd ../
         git restore module/module.prop
         echo -e "\e[0;36mmake: Info: Build finished without errors\e[0;37m"
     fi
