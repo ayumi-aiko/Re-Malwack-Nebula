@@ -92,24 +92,6 @@ else
     ln -sf "$MODDIR/rmlwk.sh" "$magisktmp/rmlwk" && logMessage "symlink created at $magisktmp/rmlwk"
 fi
 
-# Module hosts count
-blockedSys=$(cat "$persistentDirectory/counts/blockedSys.count" 2>/dev/null)
-blockedMod=$(cat "$persistentDirectory/counts/blockedMod.count" 2>/dev/null)
-
-# Count blacklisted entries (excluding comments and empty lines)
-blocklistCount=0
-[ -s "$persistentDirectory/blacklist.txt" ] && blocklistCount=$(grep -c '^[^#[:space:]]' "$persistentDirectory/blacklist.txt")
-
-# Count whitelisted entries (excluding comments and empty lines)
-whitelistCount=0
-[ -f "$persistentDirectory/whitelist.txt" ] && whitelistCount=$(grep -c '^[^#[:space:]]' "$persistentDirectory/whitelist.txt")
-
-# whatever:
-logMessage "Blacklist entries count: $blocklistCount"
-logMessage "Whitelist entries count: $whitelistCount"
-logMessage "System hosts entries count: $blockedSys"
-logMessage "Module hosts entries count: $blockedMod"
-
 # Here goes the part where we actually determine module status
 if isProtectionPaused; then
     statusMsg="Status: Protection is paused ⏸️"
@@ -134,10 +116,6 @@ elif [ "$blockedMod" -ge 0 ]; then
     fi
 fi
 
-# Apply module status into module description
-sed -i "s/^description=.*/description=$statusMsg/" "$MODDIR/module.prop"
-logMessage "$statusMsg"
-
 # Check if auto-update is enabled
 if [ "$daily_update" = 1 ]; then
     # Check if crond is running
@@ -149,3 +127,7 @@ if [ "$daily_update" = 1 ]; then
         logMessage "Crond is already running."
     fi
 fi
+
+# Apply module status into module description
+sed -i "s/^description=.*/description=$statusMsg/" "$MODDIR/module.prop"
+logMessage "$statusMsg"
