@@ -52,7 +52,6 @@ function downloadContentFromWEB() {
     local URL="$1"
     local outputPathAndFilename="$2"
     local prevPath="$PATH"
-    export PATH="/data/adb/ap/bin:/data/adb/ksu/bin:/data/adb/magisk:/data/data/com.termux/files/usr/bin:${PATH}"
     mkdir -p "$(dirname "$outputPathAndFilename")"
     if command -v curl >/dev/null 2>&1; then
         if ! curl -Ls "$URL" -o "$outputPathAndFilename"; then
@@ -65,7 +64,6 @@ function downloadContentFromWEB() {
             exit 1;
         fi
     fi
-    export PATH="${prevPath}"
 }
 # functions:
 
