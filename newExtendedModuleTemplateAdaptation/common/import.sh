@@ -1,6 +1,6 @@
 #!/system/bin/sh
 #
-# Copyright (C) 2025 愛子あゆみ <ayumi.aiko@outlook.com>
+# Copyright (C) 2025 ぼっち <ayumi.aiko@outlook.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 #
 
 # Note from ZG089: All respect for the developers of the mentioned modules/apps in this script.
-# Note from ayumi-aiko: PLEASE DON'T LOOK AT THIS AND THINK THAT IM WRITING JUKNS WITHOUT KNOWING ANYTHING! IM NOT DOING THIS ON PURPOSE AND THIS IS JUST A RE-WRITE I SWEAR TO SATAN OH MY LORD!
+# Note from bocchi-the-dev: PLEASE DON'T LOOK AT THIS AND THINK THAT IM WRITING JUKNS WITHOUT KNOWING ANYTHING! IM NOT DOING THIS ON PURPOSE AND THIS IS JUST A RE-WRITE I SWEAR TO SATAN OH MY LORD!
 
 
 # gbl variables:

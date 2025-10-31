@@ -1,6 +1,6 @@
 #!/system/bin/sh
 #
-# Copyright (C) 2025 愛子あゆみ <ayumi.aiko@outlook.com>
+# Copyright (C) 2025 ぼっち <ayumi.aiko@outlook.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

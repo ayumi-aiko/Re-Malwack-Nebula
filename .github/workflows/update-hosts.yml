@@ -59,7 +59,7 @@ jobs:
 
       - name: Commit and push updated hosts file
         run: |
-          git config --global user.name "愛子あゆみ"
+          git config --global user.name "ぼっち"
           git config --global user.email "mitsuha.bot@taki.dev"
           git add hosts
           LAST_COMMIT_MSG=$(git log -1 --pretty=%B)

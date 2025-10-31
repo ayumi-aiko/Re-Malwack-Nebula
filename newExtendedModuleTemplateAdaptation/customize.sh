@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2025 愛子あゆみ <ayumi.aiko@outlook.com>
+# Copyright (C) 2025 ぼっち <ayumi.aiko@outlook.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -68,7 +68,7 @@ done
 # okie pls dont bash me for plugging my stuff into ts.
 consolePrint "- Hoshiko is an unofficial app made by Ayumi that helps Re-Malwack to stop adblocking in certain apps requested by the user."
 if ask "  Do you want to install Hoshiko?"; then
-    downloadContentFromWEB "$(getLatestReleaseFromGithub "https://api.github.com/repos/ayumi-aiko/Hoshiko/releases/latest")" "/data/local/tmp/hoshiko.apk";
+    downloadContentFromWEB "$(getLatestReleaseFromGithub "https://api.github.com/repos/bocchi-the-dev/Hoshiko/releases/latest")" "/data/local/tmp/hoshiko.apk";
     # selinux moments hehe~ 🥰
     logInterpreter --exit-on-failure "customize.sh" "Trying to install Hoshiko application into the device..." "pm install /data/local/tmp/hoshiko.apk" "Failed to install hoshiko application, please try again.";
     consolePrint "- Thank you for installing hoshiko, i hope you will have a good experience with it.";
