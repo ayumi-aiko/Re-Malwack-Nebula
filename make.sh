@@ -19,7 +19,7 @@
 # shutt up
 CC_ROOT="/home/ayumi/android-ndk-r27d/toolchains/llvm/prebuilt/linux-x86_64/bin"
 CFLAGS="-std=c23 -O3 -static"
-BUILD_LOGFILE="./hoshiko/build.log"
+BUILD_LOGFILE="./hoshiko/hoshiko-cli/build/log"
 OUTPUT_DIR="./hoshiko/hoshiko-cli"
 OUTPUT_DIR_MODULE_BINARY_BUILD="./newExtendedModuleTemplateAdaptation/bin/"
 HOSHIKO_HEADERS="./hoshiko/hoshiko-cli/src/include"
@@ -28,6 +28,7 @@ TARGETS=("./hoshiko/hoshiko-cli/src/yuki/main.c" "./hoshiko/hoshiko-cli/src/alya
 OUTPUT_BINARY_NAMES=("hoshiko-yuki" "hoshiko-alya")
 ARCH_CLANG_FOR_BUILDING_MODULE=("armv7a-linux-androideabi" "aarch64-linux-android")
 ARCH_PATHS_FOR_MODULE_BINARIES=("armeabi-v7a" "arm64-v8a")
+IS_TARGET_SATISFIED=false
 SDK=""
 CC=""
 
@@ -37,20 +38,30 @@ if ! cd "$(realpath "$(dirname "$0")")"; then
     exit 1;
 fi
 
+# print the banner:
+printf ":::.    :::..,::::::  :::::::.   ...    ::: :::      :::.     \n"
+printf "\`;;;;,  \`;;;;;;;\'\'\'\'   ;;;\'\';;\'  ;;     ;;; ;;;      ;;\`;;    \n"
+printf "  [[[[[. \'[[ [[cccc    [[[__[[\.[[\'     [[[ [[[     ,[[ \'[[,  \n"
+printf "  \$\$$ \"Y\$c\$$ \$$\"\"\"\"    \$$\"\"\"\"Y\$\$\$$      \$\$\$ \$\$\'    c\$\$\$cc\$\$\$c \n"
+printf "  888    Y88 888oo,__ _88o,,od8P88    .d888o88oo,.__888   888,\n"
+printf "  MMM     YM \"\"\"\"YUMMM\"\"YUMMMP\"  \"YmmMMMM\"\"\"\"\"\"YUMMMYMM   \"\"\` \n"
+
 # just make the dir 
 mkdir -p "$(dirname "${BUILD_LOGFILE}")" "${OUTPUT_DIR}"
 for args in "$@"; do
     lowerCaseArgument=$(echo "${args}" | tr '[:upper:]' '[:lower:]')
     if [ "${lowerCaseArgument}" == "clean" ]; then
-        rm -f ${BUILD_LOGFILE} ${OUTPUT_DIR}/hoshiko-* ../Re-Malwack_*.zip ./Re-Malwack_*.zip ${OUTPUT_DIR_MODULE_BINARY_BUILD}/*/hoshiko-*
+        rm -f ${BUILD_LOGFILE} ${OUTPUT_DIR}/hoshiko-* ../Re-Malwack*.zip ./Re-Malwack*.zip ${OUTPUT_DIR_MODULE_BINARY_BUILD}/*/hoshiko-*
 	    echo -e "\033[0;32mmake: Info: Clean complete.\033[0m"
+        IS_TARGET_SATISFIED=true;
         break;
     elif [[ "${lowerCaseArgument}" == *module* ]]; then
+        IS_TARGET_SATISFIED=true;
         echo -e "\e[0;35mmake: Info: Building Hoshiko binaries for arm64 and arm devices..\e[0;37m"
         for j in $(seq 0 1); do
             CC="${CC_ROOT}/${ARCH_CLANG_FOR_BUILDING_MODULE[${j}]}${SDK}-clang"
             for i in $(seq 0 1); do
-                if ! ${CC} "${CFLAGS}" "${HOSHIKO_SOURCES}" -I"${HOSHIKO_HEADERS}" "${TARGETS[$i]}" -o "${OUTPUT_DIR_MODULE_BINARY_BUILD}/${ARCH_PATHS_FOR_MODULE_BINARIES[${j}]}/${OUTPUT_BINARY_NAMES[$i]}" &> "${BUILD_LOGFILE}"; then
+                if ! ${CC} ${CFLAGS} "${HOSHIKO_SOURCES}" -I"${HOSHIKO_HEADERS}" "${TARGETS[$i]}" -o "${OUTPUT_DIR_MODULE_BINARY_BUILD}/${ARCH_PATHS_FOR_MODULE_BINARIES[${j}]}/${OUTPUT_BINARY_NAMES[$i]}" &> "${BUILD_LOGFILE}"; then
                     printf "\033[0;31mmake: Error: Build failed, check %s\033[0m\n" "${BUILD_LOGFILE}"
                     exit 1
                 fi
@@ -63,7 +74,7 @@ for args in "$@"; do
         lastestVersion="$(grep version update.json | head -n 1 | awk '{print $2}' | sed 's/,//' | xargs)"
         sed -i "s/^version=.*/version=${lastestVersion}-lastest-commit-nebula (#${lastestCommitNum}-${lastestCommitHash})/" module/module.prop
         cd ./newExtendedModuleTemplateAdaptation/ || exit
-        if ! zip -r "../Re-Malwack_${lastestVersion}-${lastestCommitNum}-${lastestCommitHash}.zip" . &>/dev/null; then
+        if ! zip -r "../Re-Malwack-Nebula.zip" . &>/dev/null; then
             git restore module/module.prop
             printf "\033[0;31mmake: Error: Failed to compress the module sources, please try again or install zip to proceed.\033[0m\n"
             exit 1
@@ -92,9 +103,10 @@ for args in "$@"; do
         esac
     fi
     if [[ -n "${SDK}" && -n "${CC}" && "${lowerCaseArgument}" == *hoshiko* ]]; then
+        IS_TARGET_SATISFIED=true;
         echo -e "\e[0;35mmake: Info: Building Hoshiko binaries...\e[0;37m"
         for i in $(seq 0 1); do
-            if ! ${CC} "${CFLAGS}" "${HOSHIKO_SOURCES}" -I"${HOSHIKO_HEADERS}" "${TARGETS[$i]}" -o "${OUTPUT_DIR}/${OUTPUT_BINARY_NAMES[$i]}" &> "${BUILD_LOGFILE}"; then
+            if ! ${CC} ${CFLAGS} "${HOSHIKO_SOURCES}" -I"${HOSHIKO_HEADERS}" "${TARGETS[$i]}" -o "${OUTPUT_DIR}/${OUTPUT_BINARY_NAMES[$i]}" &> "${BUILD_LOGFILE}"; then
                 printf "\033[0;31mmake: Error: Build failed, check %s\033[0m\n" "${BUILD_LOGFILE}"
                 exit 1
             fi
@@ -102,3 +114,16 @@ for args in "$@"; do
         echo -e "\e[0;36mmake: Info: Build finished without errors, be sure to check logs if concerned. Thank you!\e[0;37m"
     fi
 done
+
+if [ "${IS_TARGET_SATISFIED}" == "false" ]; then
+	echo -e "\033[1;36mUsage:\033[0m make.sh [SDK=<level>] [ARCH=<arch>] <target>"
+	echo ""
+	echo -e "\033[1;36mTargets:\033[0m"
+	echo -e "  \033[0;32mhoshiko\033[0m     Builds the essentials for the Hoshiko app"
+	echo -e "  \033[0;32mmodule\033[0m     Builds the module zip package"
+	echo -e "  \033[0;32mclean\033[0m       Removes build artifacts"
+	echo -e "  \033[0;32mhelp\033[0m        Show this help message"
+	echo ""
+	echo -e "\033[1;36mExample:\033[0m"
+	echo -e "  make.sh SDK=30 ARCH=arm64 \033[0;32mmodule\033[0m"
+fi
