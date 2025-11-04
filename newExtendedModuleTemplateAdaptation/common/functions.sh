@@ -35,7 +35,7 @@ function abortInstance() {
     exit 1
 }
 
-# dhdhehhehehe
+# im using ts to stop magisk from printing useless stuff twin 🥹✌🏻
 function ui_print() {
 	echo "magisk: $@" > /proc/self/fd/2
 }
@@ -45,7 +45,7 @@ function debugPrint() {
 	echo "$@" > /proc/self/fd/2
 }
 
-# hdhhdhd
+# loginterpreter.
 function logInterpreter() {
 	local steps="$(echo "$1" | tr '[:upper:]' '[:lower:]')"
 	local service="$2"

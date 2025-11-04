@@ -21,7 +21,7 @@ CC_ROOT="/home/ayumi/android-ndk-r27d/toolchains/llvm/prebuilt/linux-x86_64/bin"
 CFLAGS="-std=c23 -O3 -static"
 BUILD_LOGFILE="./hoshiko/hoshiko-cli/build/log"
 OUTPUT_DIR="./hoshiko/hoshiko-cli"
-OUTPUT_DIR_MODULE_BINARY_BUILD="./newExtendedModuleTemplateAdaptation/bin/"
+OUTPUT_DIR_MODULE_BINARY_BUILD="./newExtendedModuleTemplateAdaptation/bin"
 HOSHIKO_HEADERS="./hoshiko/hoshiko-cli/src/include"
 HOSHIKO_SOURCES="./hoshiko/hoshiko-cli/src/include/daemon.c"
 TARGETS=("./hoshiko/hoshiko-cli/src/yuki/main.c" "./hoshiko/hoshiko-cli/src/alya/main.c")
@@ -50,6 +50,31 @@ printf "  MMM     YM \"\"\"\"YUMMM\"\"YUMMMP\"  \"YmmMMMM\"\"\"\"\"\"YUMMMYMM   
 mkdir -p "$(dirname "${BUILD_LOGFILE}")" "${OUTPUT_DIR}"
 for args in "$@"; do
     lowerCaseArgument=$(echo "${args}" | tr '[:upper:]' '[:lower:]')
+    if [[ -z "${SDK}" && "${lowerCaseArgument}" == sdk=* ]]; then
+        if [ "${lowerCaseArgument#sdk=}" -le "22" ]; then
+            printf "\033[0;31mmake: Error: You cannot build and use this module on a older android device, android 6.0 aka marshmallow is the minimum supported android version!\033[0m\n"
+            exit 1;
+        fi
+        SDK="${lowerCaseArgument#sdk=}"
+        continue;
+    fi
+    if [[ -z "${CC}" && -n "${SDK}" ]]; then
+        case "${lowerCaseArgument}" in
+            arch=arm)
+                CC="${CC_ROOT}/armv7a-linux-androideabi${SDK}-clang"
+            ;;
+            arch=arm64)
+                CC="${CC_ROOT}/aarch64-linux-android${SDK}-clang"
+            ;;
+            arch=x86)
+                CC="${CC_ROOT}/i686-linux-android${SDK}-clang"
+            ;;
+            arch=x86_64)
+                CC="${CC_ROOT}/x86_64-linux-android${SDK}-clang"
+            ;;
+        esac
+        continue;
+    fi
     if [ "${lowerCaseArgument}" == "clean" ]; then
         rm -f ${BUILD_LOGFILE} ${OUTPUT_DIR}/hoshiko-* ../Re-Malwack*.zip ./Re-Malwack*.zip ${OUTPUT_DIR_MODULE_BINARY_BUILD}/*/hoshiko-*
 	    echo -e "\033[0;32mmake: Info: Clean complete.\033[0m"
@@ -58,6 +83,16 @@ for args in "$@"; do
     elif [[ "${lowerCaseArgument}" == *module* ]]; then
         IS_TARGET_SATISFIED=true;
         echo -e "\e[0;35mmake: Info: Building Hoshiko binaries for arm64 and arm devices..\e[0;37m"
+        # ask the user if they want to build for a specific sdk or not.
+        printf "\e[0;35m- Do you want to build hoshiko binaries for the mentioned SDK version? \e[0;37m"
+        read foo
+        if [[ -z "$foo" || "$(echo "${foo}" | tr '[:upper:]' '[:lower:]')" != "y" ]]; then
+            echo ""
+            SDK=23
+        elif [[ -z "$SDK" ]]; then
+            printf "\033[0;31mmake: Error: SDK version is not mentioned, please either mention it in the arguments or proceed building with the default sdk version\033[0m\n"
+            exit 1;
+        fi
         for j in $(seq 0 1); do
             CC="${CC_ROOT}/${ARCH_CLANG_FOR_BUILDING_MODULE[${j}]}${SDK}-clang"
             for i in $(seq 0 1); do
@@ -82,27 +117,7 @@ for args in "$@"; do
         cd ../
         git restore module/module.prop
         echo -e "\e[0;36mmake: Info: Build finished without errors\e[0;37m"
-    fi
-    if [[ -z "${SDK}" && "${lowerCaseArgument}" == sdk=* ]]; then
-        SDK="${lowerCaseArgument#sdk=}"
-    fi
-    if [[ -z "${CC}" && -n "${SDK}" ]]; then
-        case "${lowerCaseArgument}" in
-            arch=arm)
-                CC="${CC_ROOT}/armv7a-linux-androideabi${SDK}-clang"
-            ;;
-            arch=arm64)
-                CC="${CC_ROOT}/aarch64-linux-android${SDK}-clang"
-            ;;
-            arch=x86)
-                CC="${CC_ROOT}/i686-linux-android${SDK}-clang"
-            ;;
-            arch=x86_64)
-                CC="${CC_ROOT}/x86_64-linux-android${SDK}-clang"
-            ;;
-        esac
-    fi
-    if [[ -n "${SDK}" && -n "${CC}" && "${lowerCaseArgument}" == *hoshiko* ]]; then
+    elif [[ -n "${SDK}" && -n "${CC}" && "${lowerCaseArgument}" == *hoshiko* ]]; then
         IS_TARGET_SATISFIED=true;
         echo -e "\e[0;35mmake: Info: Building Hoshiko binaries...\e[0;37m"
         for i in $(seq 0 1); do

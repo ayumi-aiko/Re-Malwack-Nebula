@@ -34,7 +34,7 @@ rm -rf "${configFile}"
 touch "$configFile"
 
 # urhm i dont wanna die for the-
-source /data/local/tmp/properties.prop
+source /dev/tmp/properties.prop
 printBanner;
 
 # tell usrs to stop installing from recovery if they are installing for the first time

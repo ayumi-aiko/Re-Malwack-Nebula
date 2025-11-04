@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ### if you want to add a late start service, change the value to true.
-doesModuleRequireLSS=false
+doesModuleRequireLSS=true
 
 ### if you want to add a post-fs-data service, change the value to true.
 doesModuleRequirePFS=true
