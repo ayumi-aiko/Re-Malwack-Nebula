@@ -1,8 +1,8 @@
 id=Re-Malwack
-name=Re-Malwack | lastest-commit-nebula (#1162-cfcbf63)
+name=Re-Malwack | Not just a normal ad-blocker module ✨
 version=v6.0
 versionCode=600
-author=ZG089, Ayumi
+author=ZG089, Bocchi
 description=A fully-fledged ad-block module.
 updateJson=https://raw.githubusercontent.com/bocchi-the-dev/Re-Malwack/main/update.json
 support=https://t.me/Re_Malwack

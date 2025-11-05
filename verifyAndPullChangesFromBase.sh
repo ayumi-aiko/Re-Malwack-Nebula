@@ -17,7 +17,6 @@
 #
 
 # gbl vars:
-nthPullFromScript=0
 changes=0
 baseURL="https://github.com/ZG089/Re-Malwack"
 baseBranch="main"
@@ -68,14 +67,14 @@ function downloadContentFromWEB() {
 # functions:
 
 # main:
-mkdir -p module/originVerify
-cd module/originVerify || exit 1
+mkdir -p newExtendedModuleTemplateAdaptation/originVerify
+cd newExtendedModuleTemplateAdaptation/originVerify || exit 1
 for i in "${thingsToFetchAndMergeFromOrigin[@]}"; do
     downloadContentFromWEB "${baseModuleURL}/${i}" "${i}"
     if [ ! -f "../${i}" ] || ! git --no-pager diff --ignore-cr-at-eol -w --no-index "${i}" "../${i}" &>/dev/null; then
         echo "[0] - ${i} differs from base repository..."
-        cp "${i}" "../${i}"
-        git add "../${i}"
+        cp "${i}" "../../newExtendedModuleTemplateAdaptation/${i}"
+        git add "../../newExtendedModuleTemplateAdaptation/${i}"
         ((changes += 1))
     fi
 done
@@ -88,9 +87,7 @@ cd ../../ || exit 1
 if (( changes == 0 )); then
     echo "- No changes detected. Mirror is up to date."
 else
-    ((nthPullFromScript += 1))
-    sed -i "s/^nthPullFromScript=.*/nthPullFromScript=${nthPullFromScript}/" ./verifyAndPullChangesFromBase.sh
-    git commit -m "github-actions: Sync ${latestHash} into Nebula's mirror (#${nthPullFromScript})"
+    git commit -m "github-actions: Sync ${latestHash} into Nebula's mirror"
     git push -u origin main &>/dev/null
 fi
 # main:
