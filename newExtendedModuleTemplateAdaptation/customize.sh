@@ -37,6 +37,10 @@ touch "$configFile"
 source /dev/tmp/properties.prop
 printBanner;
 
+# prevent tasks from running if the device is not connected to the internet till the installation.
+consolePrint "- Starting internet checker..."
+loopInternetCheck --loop
+
 # tell usrs to stop installing from recovery if they are installing for the first time
 # and uninstall the module if found 
 uninstallModule;
@@ -58,6 +62,11 @@ consolePrint " "
 
 # Add a persistent directory to save configuration
 consolePrint "- Preparing Re-Malwack environment.."
+# download the rmlwk.sh from the repository to always have the update version of it.
+rm -rf "${persistentDirectory}/rmlwk.sh"
+loopInternetCheck --wait
+downloadContentFromWEB "https://github.com/ZG089/Re-Malwack/blob/main/module/rmlwk.sh?raw=true" "${persistentDirectory}/rmlwk.sh" || \ 
+    abortInstance "  Failed to download the lastest Re-Malwack script from the origin repository, please try again later!"
 for types in block_porn block_gambling block_fakenews block_social block_trackers daily_update; do
     grep -q "^$types=" "$configFile" || echo "$types=0" >> "$configFile"
 done
@@ -68,6 +77,7 @@ done
 # okie pls dont bash me for plugging my stuff into ts.
 consolePrint "- Hoshiko is an unofficial app made by Ayumi that helps Re-Malwack to stop adblocking in certain apps requested by the user."
 if ask "  Do you want to install Hoshiko?"; then
+    loopInternetCheck --wait
     downloadContentFromWEB "$(getLatestReleaseFromGithub "https://api.github.com/repos/bocchi-the-dev/Hoshiko/releases/latest")" "/data/local/tmp/hoshiko.apk";
     # selinux moments hehe~ 🥰
     logInterpreter --exit-on-failure "customize.sh" "Trying to install Hoshiko application into the device..." "pm install /data/local/tmp/hoshiko.apk" "Failed to install hoshiko application, please try again.";
@@ -78,7 +88,7 @@ if ask "  Do you want to install Hoshiko?"; then
 fi
 
 # set permissions
-chmod 0755 $persistent_dir/config.sh ${modulePath}/action.sh ${modulePath}/rmlwk.sh ${modulePath}/uninstall.sh
+chmod 0755 $persistentDirectory/config.sh ${modulePath}/action.sh ${modulePath}/rmlwk.sh ${modulePath}/uninstall.sh
 
 # Initialize hosts files
 mkdir -p ${modulePath}/system/etc
@@ -125,3 +135,4 @@ mv "${modulePath}/bin/$(getprop "ro.product.cpu.abi")/hoshiko-yuki" "${modulePat
 
 # uhrm idc
 consolePrint "\n- Installed Re-Malwack into your device, please be sure to thank us on our Telegram!"
+loopInternetCheck --killLoop
