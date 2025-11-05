@@ -21,7 +21,6 @@ changes=0
 baseURL="https://github.com/ZG089/Re-Malwack"
 baseBranch="main"
 baseModuleURL="https://raw.githubusercontent.com/ZG089/Re-Malwack/${baseBranch}/module"
-latestHash=$(git ls-remote https://github.com/ZG089/Re-Malwack.git HEAD | awk '{print $1}' | cut -c 1-7)
 thingsToFetchAndMergeFromOrigin=(
     "banner.png"
     "rmlwk.sh"
@@ -67,7 +66,7 @@ function downloadContentFromWEB() {
 # functions:
 
 # main:
-mkdir -p newExtendedModuleTemplateAdaptation/originVerify
+mkdir -p {newExtendedModuleTemplateAdaptation,module}/originVerify
 cd newExtendedModuleTemplateAdaptation/originVerify || exit 1
 for i in "${thingsToFetchAndMergeFromOrigin[@]}"; do
     downloadContentFromWEB "${baseModuleURL}/${i}" "${i}"
@@ -78,6 +77,9 @@ for i in "${thingsToFetchAndMergeFromOrigin[@]}"; do
         ((changes += 1))
     fi
 done
+
+# we get this one thing that requires us to just cd to that old module directory.
+cd ../../module/originVerify
 for j in "${thingsToVerifyChangesFromOrigin[@]}"; do
     downloadContentFromWEB "${baseModuleURL}/${j}" "${j}"
     git --no-pager diff --ignore-cr-at-eol -w --no-index "${j}" "../${j}" &>/dev/null || echo "[1] - ${j} differs from base repository..."
@@ -87,7 +89,7 @@ cd ../../ || exit 1
 if (( changes == 0 )); then
     echo "- No changes detected. Mirror is up to date."
 else
-    git commit -m "github-actions: Sync ${latestHash} into Nebula's mirror"
+    git commit -m "github-actions: Sync the required changes into Nebula's mirror"
     git push -u origin main &>/dev/null
 fi
 # main:
