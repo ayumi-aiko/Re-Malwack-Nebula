@@ -46,9 +46,11 @@ function bindhostsImportLists() {
 }
 
 function dedupFile() {
-    local file="$1"
-    [ -f "$file" ] || return
-    awk '!seen[$0]++' "$file" > "$file.tmp" && mv "$file.tmp" "$file"
+    local file="$@"
+    for i in $file; do
+        [ -f "$i" ] || continue;
+        awk '!seen[$0]++' "$i" > "$i.tmp" && mv "$i.tmp" "$i"
+    done
 }
 
 # import adaway contents if there's an backup file found.
@@ -249,6 +251,4 @@ EOF
 done
 
 # Dedup everything at the end just in case
-for i in {sources,whitelist,blacklist}; do
-    dedupFile "${persistentDirectory}/${i}.txt"
-done
+dedupFile ${persistentDirectory}/{sources,whitelist,blacklist}.txt
