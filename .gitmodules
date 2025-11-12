@@ -1,0 +1,3 @@
+[submodule "hoshiko"]
+	path = hoshiko
+	url = git@github.com:bocchi-the-dev/Hoshiko.git
