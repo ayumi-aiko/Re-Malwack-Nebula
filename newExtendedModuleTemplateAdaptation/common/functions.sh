@@ -22,8 +22,9 @@ if $BOOTMODE; then defaultModuleDirectory=modules_update; else defaultModuleDire
 modulePath="/data/adb/${defaultModuleDirectory}/${moduleID}"
 persistentDirectory="/data/adb/Re-Malwack"
 configFile="$persistentDirectory/config.sh"
+thisDeviceTotalRAM=$(awk '/MemTotal/ {print int($2/1024)}' /proc/meminfo)
 
-# the ui_print calls will get redirected to the Magisk log by the debugPrint function.
+# the ui_print calls will get redirected to the manager log by the debugPrint function.
 function consolePrint() {
     echo -e "$@" > /proc/self/fd/$OUTFD
 }
@@ -35,9 +36,9 @@ function abortInstance() {
     exit 1
 }
 
-# im using ts to stop magisk from printing useless stuff twin 🥹✌🏻
+# im using ts to stop manager from printing useless stuff twin 🥹✌🏻
 function ui_print() {
-	echo "magisk: $@" > /proc/self/fd/2
+	echo "manager: $@" > /proc/self/fd/2
 }
 
 # it was a whole diff thing back then, i swear!
@@ -185,7 +186,7 @@ function uninstallModule() {
 		for paths in /data/adb/*/${moduleID}; do
 			if [ -f "$paths" ]; then 
 				touch ${paths}/uninstall
-				consolePrint "Found module on $paths, placing a file to remind magisk to uninstall this module."
+				consolePrint "Found module on $paths, placing a file to remind root manager to uninstall this module."
 			fi
 		done
 		abort "- You cannot install this module in recovery mode"

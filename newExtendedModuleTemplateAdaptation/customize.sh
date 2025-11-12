@@ -104,6 +104,24 @@ else
     appendUnavailableURL "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/hosts/native.tiktok.txt"
 fi
 
+# TODO: implement an argument in the `rmlwk.sh` for profile based adblock and
+# fix the argument handler. Moving on, let's consider using RAM for determining the correct profile.
+if [ "$thisDeviceTotalRAM" -lt 1000 ]; then
+    profile="low | 20-50K"
+    # low, 20-50k (approx)
+elif [ "$thisDeviceTotalRAM" -lt 2000 ]; then
+    profile="minimal | 100k-200k"
+    # minimal, 100k-200k (approx)
+elif [ "$thisDeviceTotalRAM" -le 4000 ] || [ "$thisDeviceTotalRAM" -le 8000 ]; then
+    profile="medium | 300k-500k"
+    # medium, 300k-500k (approx)
+else
+    profile="maximum | 900k"
+    # maximum, 900k (approx)
+fi
+# Reload DNS cache / service
+#pidof netd >/dev/null 2>&1 && #killall -HUP netd
+
 # Initialize
 if ! sh ${modulePath}/rmlwk.sh --update-hosts --quiet; then
     consolePrint "- Failed to initialize script"
