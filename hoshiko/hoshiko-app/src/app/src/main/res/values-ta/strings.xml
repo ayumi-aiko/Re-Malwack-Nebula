@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name" translatable="false">Hoshiko</string>
+    <string name="daemonTogglebtn">யூகியை இயக்கு</string>
+    <string name="enterapppackagetorm">அகற்ற package பெயரை உள்ளிடவும்.</string>
+    <string name="enterapppackagetoadd">சேர்க்க package பெயரை உள்ளிடவும்.</string>
+    <string name="noroot">முழு செயல்பாட்டிற்கு ரூட் தேவையlidir!</string>
+    <string name="okay_button_text">சரி!</string>
+    <string name="addedgivenpackage">Package சேர்க்கப்பட்டது!</string>
+    <string name="failedtoaddgivenpackage">Package சேர்க்க முடியவில்லை, ஏற்கனவே list-ல் இருக்கலாம்.</string>
+    <string name="removedgivenpackage">Package அகற்றப்பட்டது!</string>
+    <string name="failedtoremovegivenpackage">கொடுக்கப்பட்ட package அகற்ற முடியவில்லை, அது list-ல் இருக்காமல் இருக்கலாம்.</string>
+    <string name="startedyukisuccessfully">யூகி தொடங்கியது!</string>
+    <string name="failedtostartyuki">யூகி தொடங்க முடியவில்லை!</string>
+    <string name="stoppedyukisuccessfully">யூகி நிறுத்தப்பட்டது!</string>
+    <string name="failedtostopyuki">யூகி நிறுத்த முடியவில்லை!</string>
+    <string name="failedtoimportpackagelist">Package list இறக்குமதி செய்ய முடியவில்லை, /sdcard/export-alya.txt இடுக.</string>
+    <string name="importedpackagelistsuccessfully">Package list இறக்குமதி செய்யப்பட்டு முடிந்தது!</string>
+    <string name="failedtoexportpackagelist">Package list ஏற்றுமதி செய்ய முடியவில்லை!</string>
+    <string name="exportedpackagelistsuccessfully">Package list /sdcard/export-alya.txt-ல் ஏற்றுமதி செய்யப்பட்டது!</string>
+</resources>

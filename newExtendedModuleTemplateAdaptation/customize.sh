@@ -1,0 +1,136 @@
+#
+# Copyright (C) 2025 ぼっち <ayumi.aiko@outlook.com>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+# newer magisk pre-setup:
+if [ -z "${updateBinaryGotExecuted}" ]; then
+    for files in banner common/functions.sh properties.prop module.prop; do
+        unzip -o $ZIPFILE $files -d /dev/tmp &>/dev/null
+    done
+    chmod +x /dev/tmp/common/functions.sh
+    source /dev/tmp/common/functions.sh
+    debugPrint "customize.sh: Newer magisk version detected"
+fi
+
+# setup stuff: give perms to the binaries inside /bin!
+chmod 755 ${modulePath}/bin/*/*
+chown root:root ${modulePath}/bin/*/*
+chcon u:r:system_file:s0 ${modulePath}/bin/*/*
+mkdir -p "$persistentDirectory"
+rm -rf "${configFile}"
+touch "$configFile"
+
+# urhm i dont wanna die for the-
+source /dev/tmp/properties.prop
+printBanner;
+
+# prevent tasks from running if the device is not connected to the internet till the installation.
+consolePrint "- Starting internet checker..."
+loopInternetCheck --loop
+
+# tell usrs to stop installing from recovery if they are installing for the first time
+# and uninstall the module if found 
+uninstallModule;
+
+# skip installations if x86* not supported.
+[ "$(getprop "ro.product.cpu.abi")" == "x86|x86_64" ] && [ "${doesModuleSupportHavingX86LibrariesAndBinaries}" == "false" ] && \
+    abortInstance "- Your device is not supported to install this module."
+
+# alert users to uninstall adaway.
+pm list packages | grep -q org.adaway && abortInstance "- Adaway detected, Please uninstall to prevent conflicts, backup your setup optionally before uninstalling in case you want to import your setup."
+
+# check volume keyyyyyyy
+consolePrint "- Starting to register your device's volume key inputs..."
+consolePrint "  Please press volume + (UP)"
+registerKeys "UP"
+consolePrint "  Please press volume - (DOWN)"
+registerKeys "DOWN"
+consolePrint " "
+
+# Add a persistent directory to save configuration
+consolePrint "- Preparing Re-Malwack environment.."
+# download the rmlwk.sh from the repository to always have the update version of it.
+rm -rf "${persistentDirectory}/rmlwk.sh"
+loopInternetCheck --wait
+downloadContentFromWEB "https://github.com/ZG089/Re-Malwack/blob/main/module/rmlwk.sh?raw=true" "${persistentDirectory}/rmlwk.sh" || \ 
+    abortInstance "  Failed to download the lastest Re-Malwack script from the origin repository, please try again later!"
+for types in block_porn block_gambling block_fakenews block_social block_trackers daily_update; do
+    grep -q "^$types=" "$configFile" || echo "$types=0" >> "$configFile"
+done
+
+# Import from other ad-block modules.
+. ${modulePath}/common/import.sh
+
+# okie pls dont bash me for plugging my stuff into ts.
+consolePrint "- Hoshiko is an unofficial app made by Bocchi that helps Re-Malwack to stop adblocking in certain apps requested by the user."
+if ask "  Do you want to install Hoshiko?"; then
+    loopInternetCheck --wait
+    downloadContentFromWEB "$(getLatestReleaseFromGithub "https://api.github.com/repos/bocchi-the-dev/Hoshiko/releases/latest")" "/data/local/tmp/hoshiko.apk";
+    # selinux moments hehe~ 🥰
+    logInterpreter --exit-on-failure "customize.sh" "Trying to install Hoshiko application into the device..." "pm install /data/local/tmp/hoshiko.apk" "Failed to install hoshiko application, please try again.";
+    consolePrint "- Thank you for installing hoshiko, i hope you will have a good experience with it.";
+    consolePrint "  Regards, Bocchi, the creater of Hoshiko and a contributor to Re-Malwack.";
+fi
+
+# set permissions
+chmod 0755 $persistentDirectory/config.sh ${modulePath}/action.sh ${modulePath}/rmlwk.sh ${modulePath}/uninstall.sh
+
+# Initialize hosts files
+mkdir -p ${modulePath}/system/etc
+rm -rf $persistentDirectory/logs/* 2>/dev/null
+rm -rf $persistentDirectory/cache/* 2>/dev/null
+
+# handle hosts sources file:
+if [ ! -s "${persistentDirectory}/sources.txt" ]; then
+    mv -f ${modulePath}/common/sources.txt $persistentDirectory/sources.txt
+else 
+    # update sources
+    rm -f ${modulePath}/common/sources.txt
+    sed -i 's|https://raw.githubusercontent.com/hagezi/dns-blocklists/main/hosts/pro.plus.txt|https://raw.githubusercontent.com/hagezi/dns-blocklists/main/hosts/pro.txt|' $persistentDirectory/sources.txt
+    sed -i 's|https://o0.pages.dev/Pro/hosts.txt|https://badmojr.github.io/1Hosts/Lite/hosts.txt|' $persistentDirectory/sources.txt
+    appendUnavailableURL "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/hosts/native.tiktok.txt"
+fi
+
+# Initialize
+if ! sh ${modulePath}/rmlwk.sh --update-hosts --quiet; then
+    consolePrint "- Failed to initialize script"
+    tarFileName="/sdcard/Download/Re-Malwack_install_log_$(date +%Y-%m-%d_%H%M%S).tar.gz"
+    tar -czvf ${tarFileName} --exclude="$persistentDirectory" -C $persistentDirectory logs
+    # cleanup in case of failure (in worst cases on first install)
+    [ -d /data/adb/modules/Re-Malwack ] || rm -rf /data/adb/Re-Malwack
+    abortInstance "  Logs are saved in ${tarFileName}"
+fi
+
+# Create symlink on install for ksu/ap
+for i in /data/adb/ap/bin /data/adb/ksu/bin; do
+    [ -d "$i" ] && ln -sf "/data/adb/modules/Re-Malwack/rmlwk.sh" "$i/rmlwk"
+done
+
+# Cleanup
+rm -f ${modulePath}/import.sh
+
+# extract the init services 
+[ "${doesModuleRequireLSS}" == "true" ] && logInterpreter --exit-on-failure "customize.sh" "Trying to extract the late start service script..." "unzip -o ${ZIPFILE} service.sh -d ${modulePath}"
+[ "${doesModuleRequirePFS}" == "true" ] && logInterpreter --exit-on-failure "customize.sh" "Trying to extract the post-fs-data script..." "unzip -o ${ZIPFILE} post-fs-data.sh -d ${modulePath}"
+
+# move the appropriate bbinaries into the system path.
+mkdir -p "${modulePath}/system/bin"
+mv "${modulePath}/bin/$(getprop "ro.product.cpu.abi")/hoshiko-alya" "${modulePath}/system/bin/"
+mv "${modulePath}/bin/$(getprop "ro.product.cpu.abi")/hoshiko-yuki" "${modulePath}/system/bin/"
+
+# uhrm idc
+consolePrint "\n- Installed Re-Malwack into your device, please be sure to thank us on our Telegram!"
+loopInternetCheck --killLoop

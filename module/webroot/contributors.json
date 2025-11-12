@@ -1,0 +1,62 @@
+[
+    {
+        "username": "ZG089",
+        "type": "Founder",
+        "description": "Main developer"
+    },
+    {
+        "username": "KOWX712",
+        "type": "Contributor",
+        "description": "WebUI + Contributor"
+    },
+    {
+        "username": "GalaxyA14user",
+        "type": "Contributor",
+        "description": "Fixing bugs + Contributor"
+    },
+    {
+        "username": "ayumi-aiko",
+        "type": "Contributor",
+        "description": "Contributor"
+    },
+    {
+        "username": "myst-25",
+        "type": "Contributor",
+        "description": "Active tester"
+    },
+    {
+        "username": "person0z",
+        "type": "Foundational Supporters",
+        "description": "Malwack Magisk module creator"
+    },
+    {
+        "username": "topjohnwu",
+        "type": "Foundational Supporters",
+        "description": "Magisk Founder"
+    },
+    {
+        "username": "Hagezi",
+        "type": "Hosts Provider",
+        "description": "Hosts file source"
+    },
+    {
+        "username": "badmojr",
+        "type": "Hosts Provider",
+        "description": "Hosts file source"
+    },
+    {
+        "username": "Rem01Gaming",
+        "type": "Hosts Provider",
+        "description": "Hosts file source"
+    },
+    {
+        "username": "StevenBlack",
+        "type": "Hosts Provider",
+        "description": "fake news sites and gambling sites blocklist"
+    },
+    {
+        "username": "r-a-y",
+        "type": "Hosts Provider",
+        "description": "AdGuard Tracking blocklist"
+    }
+]
