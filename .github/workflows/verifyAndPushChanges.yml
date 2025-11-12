@@ -38,7 +38,7 @@ jobs:
       - name: Configure Git Identity
         run: |
           git config --global user.name "ぼっち"
-          git config --global user.email "mitsuha.bot@taki.dev"
+          git config --global user.email "ayumi.aiko@outlook.com"
 
       - name: Run verifyAndPullChangesFromBase.sh
         run: |

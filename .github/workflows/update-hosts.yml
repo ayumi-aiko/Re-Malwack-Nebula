@@ -60,7 +60,7 @@ jobs:
       - name: Commit and push updated hosts file
         run: |
           git config --global user.name "ぼっち"
-          git config --global user.email "mitsuha.bot@taki.dev"
+          git config --global user.email "ayumi.aiko@outlook.com"
           git add hosts
           LAST_COMMIT_MSG=$(git log -1 --pretty=%B)
           if [[ "$LAST_COMMIT_MSG" == "Update hosts file" ]]; then

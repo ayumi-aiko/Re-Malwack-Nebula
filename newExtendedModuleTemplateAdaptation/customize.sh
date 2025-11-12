@@ -75,16 +75,14 @@ done
 . ${modulePath}/common/import.sh
 
 # okie pls dont bash me for plugging my stuff into ts.
-consolePrint "- Hoshiko is an unofficial app made by Ayumi that helps Re-Malwack to stop adblocking in certain apps requested by the user."
+consolePrint "- Hoshiko is an unofficial app made by Bocchi that helps Re-Malwack to stop adblocking in certain apps requested by the user."
 if ask "  Do you want to install Hoshiko?"; then
     loopInternetCheck --wait
     downloadContentFromWEB "$(getLatestReleaseFromGithub "https://api.github.com/repos/bocchi-the-dev/Hoshiko/releases/latest")" "/data/local/tmp/hoshiko.apk";
     # selinux moments hehe~ 🥰
     logInterpreter --exit-on-failure "customize.sh" "Trying to install Hoshiko application into the device..." "pm install /data/local/tmp/hoshiko.apk" "Failed to install hoshiko application, please try again.";
     consolePrint "- Thank you for installing hoshiko, i hope you will have a good experience with it.";
-    consolePrint "  Regards, Ayumi, the creater of Hoshiko and a contributor to Re-Malwack.";
-    consolePrint "  One more thing, please don't bash me for having an \"complex\" ui design"
-    consolePrint "  I'm not someone who's good and i will upload a example video on github soon."
+    consolePrint "  Regards, Bocchi, the creater of Hoshiko and a contributor to Re-Malwack.";
 fi
 
 # set permissions
